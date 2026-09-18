@@ -1,0 +1,22 @@
+# Provisioning this Blueprint creates paid hosting resources. Review pricing first.
+services:
+  - type: web
+    name: kharcha
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --preload wsgi:app
+    healthCheckPath: /health
+    disk:
+      name: kharcha-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.12
+      - key: KHARCHA_ENV
+        value: production
+      - key: DATABASE_PATH
+        value: /var/data/kharcha.sqlite
+      - key: SECRET_KEY
+        generateValue: true

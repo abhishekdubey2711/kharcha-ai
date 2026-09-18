@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ session.csrf_token }}">
+  <meta name="description" content="Kharcha — track personal income and expenses with monthly summaries and CSV export.">
+  <title>Kharcha · Expense Tracker</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block scripts %}{% endblock %}
+</head>
+<body>{% block body %}{% endblock %}</body>
+</html>

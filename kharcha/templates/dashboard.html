@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}" defer></script>{% endblock %}
+{% block body %}
+<div class="app-shell">
+<aside class="sidebar">
+  <a class="brand" href="/"><span class="brand-mark">k.</span> kharcha<span class="brand-dot">.</span></a>
+  <div class="workspace"><span class="workspace-icon">A</span><div>Personal space<small>INR · Indian Rupee</small></div></div>
+  <span class="nav-label">WORKSPACE</span>
+  <nav aria-label="Main navigation"><a href="#overview" class="nav-link active"><span>◫</span> Overview</a><a href="#transactions" class="nav-link"><span>⇄</span> Transactions</a><a href="#insights" class="nav-link"><span>◷</span> Spending insights</a></nav>
+  <div class="sidebar-note"><span class="note-symbol">✳</span><h3>Chai counts too.</h3><p>Add the small expenses.<br>They add up faster than you think.</p></div>
+  <div class="profile"><span class="avatar">{{ user.name[0]|upper }}</span><div><strong>{{ user.name }}</strong><small>{{ 'Demo workspace' if user.is_demo else 'Personal account' }}</small></div><form method="post" action="/logout"><input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><button class="icon-button" aria-label="Sign out" title="Sign out">↪</button></form></div>
+</aside>
+<main class="main-content" id="overview">
+  <header class="topbar"><span>Workspace <span class="slash">/</span> <strong>Overview</strong></span><div class="topbar-right">{{ 'FICTIONAL DEMO DATA' if user.is_demo else 'YOUR PERSONAL LEDGER' }} <span class="mini-avatar">{{ user.name[0]|upper }}</span><form class="mobile-signout" method="post" action="/logout"><input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><button class="icon-button" aria-label="Sign out" title="Sign out">↪</button></form></div></header>
+  <div class="page-content">
+    <section class="page-heading"><div><span class="eyebrow">PERSONAL EXPENSE TRACKER</span><h1>Monthly overview<span class="green">.</span></h1><p>Welcome back, {{ user.name.split()[0] }}. Here’s what you’ve recorded.</p></div><button class="button primary" id="add-transaction"><span>＋</span> Add transaction</button></section>
+    <div class="period-row"><div class="period-label"><span class="calendar-icon">▦</span><label for="month">Monthly overview</label></div><input type="month" id="month" value="{{ today[:7] }}" min="1900-01" max="9998-12" aria-label="Summary month"></div>
+    <div id="page-error" class="error" role="alert" hidden></div>
+    <section class="stats-grid" aria-label="Financial summary">
+      <article class="stat-card balance"><div><span>Current balance</span><span class="stat-icon">₹</span></div><strong id="balance">—</strong><p>All records through today</p><span class="balance-art" aria-hidden="true">◌</span></article>
+      <article class="stat-card"><div><span>Money in</span><span class="stat-icon income-icon">↙</span></div><strong id="income">—</strong><p>Income this month</p></article>
+      <article class="stat-card"><div><span>Money out</span><span class="stat-icon expense-icon">↗</span></div><strong id="expense">—</strong><p>Expenses this month</p></article>
+      <article class="stat-card"><div><span>Net this month</span><span class="stat-icon net-icon">≈</span></div><strong id="net">—</strong><p id="net-caption">Income minus expenses</p></article>
+    </section>
+    <section class="quick-entry"><span class="sparkle" aria-hidden="true">✧</span><div><h2>Add it in one line</h2><p>{{ 'Use AI to turn a sentence into a draft. Your text is sent to Google Gemini.' if ai_enabled and not user.is_demo else 'Turn a simple sentence into a transaction draft with local smart entry.' }}</p></div><form id="quick-form"><label class="sr-only" for="quick-text">Describe one transaction</label><input id="quick-text" maxlength="500" placeholder="Spent ₹180 on coffee yesterday" required><button type="submit" class="button quick-button" id="parse-button">Make a draft <span>↗</span></button></form></section>
+    <section class="chart-grid" id="insights">
+      <article class="panel"><div class="panel-heading"><div><h2>Cash flow</h2><p>Income and expenses over six months</p></div><div class="chart-legend"><span class="legend-income">Income</span><span class="legend-expense">Expenses</span></div></div><div id="cash-chart" class="cash-chart" aria-label="Six-month income and expenses"></div></article>
+      <article class="panel"><div class="panel-heading"><div><h2>Where it went</h2><p>Expenses by category</p></div><span class="small-badge">THIS MONTH</span></div><div class="spending-body"><div id="donut" class="donut"></div><div id="category-legend" class="category-legend"></div></div></article>
+    </section>
+    <section class="panel transactions-panel" id="transactions"><div class="panel-heading"><div><h2>Transactions <span id="transaction-count" class="count-badge">0</span></h2><p>Your income and expense records.</p></div><a href="/api/export" id="export" class="button secondary small">↓ &nbsp; Export CSV</a></div>
+      <div class="transaction-controls"><div class="type-tabs" role="group" aria-label="Transaction type"><button class="selected" data-kind="" aria-pressed="true">All transactions</button><button data-kind="income" aria-pressed="false">Income</button><button data-kind="expense" aria-pressed="false">Expenses</button></div><div class="filters"><input type="search" id="search" maxlength="120" placeholder="Search transactions…" aria-label="Search transactions"><select id="filter-category" aria-label="Filter category"><option value="">All categories</option></select></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Description</th><th>Category</th><th>Date</th><th>Method</th><th class="amount-col">Amount</th><th><span class="sr-only">Actions</span></th></tr></thead><tbody id="transaction-rows"><tr><td colspan="6" class="empty-state">Loading your transactions…</td></tr></tbody></table></div>
+      <footer class="table-footer"><span id="pagination-label">Loading…</span><div><button class="button secondary small" id="previous" disabled>← Previous</button><button class="button secondary small" id="next" disabled>Next →</button></div></footer>
+    </section>
+    <footer class="page-footer"><span>kharcha. <span class="muted">Income and expense tracker.</span></span><span>Amounts in Indian Rupees (₹)</span></footer>
+  </div>
+</main>
+</div>
+<dialog id="transaction-dialog" aria-labelledby="dialog-title"><form id="transaction-form"><div class="dialog-heading"><div><span class="eyebrow">YOUR PERSONAL LEDGER</span><h2 id="dialog-title">Add transaction</h2></div><button type="button" class="icon-button" data-close aria-label="Close">✕</button></div><p id="draft-notice" class="notice" hidden></p><p id="form-error" class="error" role="alert" hidden></p><input type="hidden" id="record-id"><label>Type<select id="kind" required><option value="expense">Expense</option><option value="income">Income</option></select></label><div class="form-grid"><label>Amount (₹)<input id="amount" type="number" min="0.01" max="1000000000" step="0.01" placeholder="0.00" required></label><label>Date<input id="date" type="date" value="{{ today }}" required></label></div><label>Description<input id="description" maxlength="120" placeholder="What was it for?" required></label><div class="form-grid"><label>Category<select id="category" required></select></label><label>Payment method<select id="payment"><option>UPI</option><option>Cash</option><option>Card</option><option>Bank transfer</option></select></label></div><label>Notes <span class="muted">(optional)</span><textarea id="notes" maxlength="500" rows="2" placeholder="Anything you’d like to remember"></textarea></label><div class="dialog-actions"><button type="button" class="button secondary" data-close>Cancel</button><button id="save-button" class="button primary" type="submit">Save transaction</button></div></form></dialog>
+<dialog id="delete-dialog" aria-labelledby="delete-title"><h2 id="delete-title">Delete this transaction?</h2><p id="delete-description"></p><p class="muted">This permanently removes the record from your ledger.</p><div class="dialog-actions"><button class="button secondary" id="cancel-delete">Keep transaction</button><button class="button danger" id="confirm-delete">Delete transaction</button></div><p id="delete-error" class="error" role="alert" hidden></p></dialog>
+<div id="toast" role="status" class="toast" hidden></div>
+{% endblock %}

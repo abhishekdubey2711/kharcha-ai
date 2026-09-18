@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block body %}
+<main class="auth-layout">
+  <section class="auth-story">
+    <a class="brand" href="/login"><span class="brand-mark">k.</span> kharcha<span class="brand-dot">.</span></a>
+    <div class="story-content"><span class="eyebrow">PERSONAL EXPENSE TRACKER</span><h1>Keep track of<br>your kharcha.</h1><p>Chai, groceries, rent, the occasional online order.<br>Keep your income and expenses in one place.</p>
+      <div class="receipt"><div class="receipt-top"><span>A FEW EVERYDAY EXPENSES</span><span>₹</span></div><div><span>A coffee with friends</span><b>₹180</b></div><div><span>A Python course</span><b>₹650</b></div><div><span>Auto to campus</span><b>₹120</b></div><hr><p>Sample entries · Amounts in INR</p></div>
+    </div><span class="story-footer">Kharcha · Flask + SQLite</span>
+  </section>
+  <section class="auth-form"><div><span class="eyebrow">KHARCHA</span><h2>{{ 'Create an account.' if registering else 'Welcome back.' }}</h2><p class="muted">{{ 'Start with an empty ledger and add your first transaction.' if registering else 'Sign in to view your transactions.' }}</p>
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" action="{{ '/register' if registering else '/login' }}">
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+      {% if registering %}<label>Your name<input name="name" autocomplete="name" maxlength="60" required placeholder="Abhishek" value="{{ request.form.get('name','') }}"></label>{% endif %}
+      <label>Email address<input type="email" name="email" autocomplete="email" maxlength="254" required placeholder="you@example.com" value="{{ request.form.get('email','') }}"></label>
+      <label>Password<input type="password" name="password" autocomplete="{{ 'new-password' if registering else 'current-password' }}" minlength="8" maxlength="128" required placeholder="At least 8 characters"></label>
+      <button class="button primary full" type="submit">{{ 'Create account' if registering else 'Sign in' }} <span>↗</span></button>
+    </form>
+    <p class="auth-switch">{{ 'Already have an account?' if registering else 'New to Kharcha?' }} <a href="{{ '/login' if registering else '/register' }}">{{ 'Sign in' if registering else 'Create an account' }}</a></p>
+    <div class="divider"><span>TRY IT WITHOUT AN ACCOUNT</span></div>
+    <form action="/demo" method="post"><input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><button class="button secondary full">Explore the demo <span>→</span></button></form>
+    <p class="fine-print">A private demo with fictional records. No sign-up needed.</p>
+  </div></section>
+</main>
+{% endblock %}
